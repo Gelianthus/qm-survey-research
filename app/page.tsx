@@ -1,65 +1,143 @@
-import Image from "next/image";
+"use client";
+
+import QuestionGroup from "@/components/QuestionGroup";
+import { QUESTION_DATA } from "@/data/question-data";
 
 export default function Home() {
+  async function handleSubmit(e: any) {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const data: any = {
+      student_name: formData.get("student_name"),
+      college_program: formData.get("college_program"),
+      school: formData.get("school"),
+      responses: {},
+    };
+
+    for (let { skill } of QUESTION_DATA) {
+      data.responses[skill] = {
+        rating: Number(formData.get(`${skill}_rating`)),
+        used: formData.get(`${skill}_used`),
+        example: formData.get(`${skill}_example`) || "",
+      };
+    }
+
+    try {
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        alert("Survey submitted successfully!");
+        form.reset();
+      } else {
+        alert("Submission failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#f0ebf8] py-6 sm:py-10 px-3 sm:px-4 font-sans">
+      <div className="max-w-2xl mx-auto space-y-4">
+
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="h-2.5 bg-[#7248b9]" />
+          <div className="px-6 py-6">
+            <h1 className="text-2xl sm:text-3xl font-normal text-gray-800 mb-1">
+              Computer Literacy Survey
+            </h1>
+            <p className="text-sm text-gray-500">
+              This survey assesses computer literacy skills. Fields marked with{" "}
+              <span className="text-red-500">*</span> are required.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <form onSubmit={handleSubmit}>
+          <div className="bg-white rounded-lg shadow-sm px-4 sm:px-6 py-5 sm:py-6 space-y-5">
+            <h2 className="text-base font-medium text-gray-700 border-b pb-2">
+              Section I: Respondent Information
+            </h2>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-gray-700">
+                Name <span className="text-gray-400 text-xs">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                name="student_name"
+                placeholder="Your answer"
+                className="border-b border-gray-300 focus:border-[#7248b9] outline-none text-sm py-1.5 text-gray-800 placeholder:text-gray-300 transition-colors bg-transparent"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-gray-700">
+                College Program / Course{" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="college_program"
+                required
+                placeholder="Your answer"
+                className="border-b border-gray-300 focus:border-[#7248b9] outline-none text-sm py-1.5 text-gray-800 placeholder:text-gray-300 transition-colors bg-transparent"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-gray-700">
+                School / Institution <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="school"
+                required
+                placeholder="Your answer"
+                className="border-b border-gray-300 focus:border-[#7248b9] outline-none text-sm py-1.5 text-gray-800 placeholder:text-gray-300 transition-colors bg-transparent"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-4">
+            <div className="bg-white rounded-lg shadow-sm px-6 py-4">
+              <h2 className="text-base font-medium text-gray-700 border-b pb-2 mb-1">
+                Section II: Computer Literacy Self-Assessment
+              </h2>
+              <p className="text-sm text-gray-500">Rate your proficiency from 1 (lowest) to 5 (highest).</p>
+            </div>
+
+            {QUESTION_DATA.map((data) => (
+              <QuestionGroup key={data.skill} questionBlock={data} />
+            ))}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between mt-6">
+            <button
+              type="submit"
+              className="w-full sm:w-auto bg-[#7248b9] hover:bg-[#5e3a9e] text-white text-sm font-medium px-8 py-3 sm:py-2.5 rounded transition-colors"
+            >
+              Submit
+            </button>
+            <button
+              type="reset"
+              className="text-sm text-[#7248b9] hover:underline text-center sm:text-left"
+            >
+              Clear form
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
