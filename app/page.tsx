@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import QuestionGroup from "@/components/QuestionGroup";
 import { QUESTION_DATA } from "@/data/question-data";
 
 export default function Home() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   async function handleSubmit(e: any) {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -43,6 +49,8 @@ export default function Home() {
     } catch (err) {
       console.error(err);
       alert("Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -125,13 +133,15 @@ export default function Home() {
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between mt-6">
             <button
               type="submit"
-              className="w-full sm:w-auto bg-[#7248b9] hover:bg-[#5e3a9e] text-white text-sm font-medium px-8 py-3 sm:py-2.5 rounded transition-colors"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto bg-[#7248b9] hover:bg-[#5e3a9e] disabled:bg-[#7248b9]/50 disabled:cursor-not-allowed text-white text-sm font-medium px-8 py-3 sm:py-2.5 rounded transition-colors cursor-pointer"
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </button>
             <button
               type="reset"
-              className="text-sm text-[#7248b9] hover:underline text-center sm:text-left"
+              disabled={isSubmitting}
+              className="text-sm text-[#7248b9] hover:underline disabled:opacity-50 disabled:cursor-not-allowed text-center sm:text-left cursor-pointer"
             >
               Clear form
             </button>
