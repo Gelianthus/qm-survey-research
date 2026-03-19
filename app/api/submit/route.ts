@@ -7,6 +7,17 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const ipRequestMap = new Map<string, { count: number; windowStart: number }>();
 
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+function corsHeaders(origin: string | null) {
+  const allowed = origin === ALLOWED_ORIGIN;
+  return {
+    "Access-Control-Allow-Origin": allowed ? ALLOWED_ORIGIN : "",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const entry = ipRequestMap.get(ip);
@@ -32,14 +43,24 @@ const submissionSchema = z.object({
   responses: z.record(z.string(), responseSchema),
 });
 
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(origin),
+  });
+}
 
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  const headers = corsHeaders(origin);
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
   if (isRateLimited(ip)) {
     return Response.json(
       { success: false, message: "Too many requests. Please wait a moment." },
-      { status: 429 }
+      { status: 429, headers }
     );
   }
 
@@ -47,7 +68,7 @@ export async function POST(req: NextRequest) {
   if (contentLength && parseInt(contentLength) > 50_000) {
     return Response.json(
       { success: false, message: "Request body too large." },
-      { status: 413 }
+      { status: 413, headers }
     );
   }
 
@@ -55,28 +76,32 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ success: false, message: "Malformed JSON." }, { status: 400 });
+    return Response.json(
+      { success: false, message: "Malformed JSON." },
+      { status: 400, headers }
+    );
   }
 
   const parsed = submissionSchema.safeParse(body);
   if (!parsed.success) {
     return Response.json(
       { success: false, message: parsed.error.issues[0].message },
-      { status: 422 }
+      { status: 422, headers }
     );
   }
 
   try {
     await connectMongoDB();
     const submission = await Submission.create(parsed.data);
-    return Response.json({ success: true, data: submission });
+    return Response.json(
+      { success: true, data: submission },
+      { status: 200, headers }
+    );
   } catch (error) {
     console.error("Submission error:", error);
     return Response.json(
       { success: false, message: "Failed to save submission." },
-      { status: 500 }
+      { status: 500, headers }
     );
   }
 }
-
-
