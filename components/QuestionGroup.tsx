@@ -12,6 +12,12 @@ type Props = {
 
 export default function QuestionGroup({ questionBlock }: Props) {
   const [used, setUsed] = useState<string | null>(null);
+  const [example, setExample] = useState("");
+
+  function handleUsedChange(val: string) {
+    setUsed(val);
+    if (val === "no") setExample("");
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm px-4 sm:px-6 py-5 space-y-5">
@@ -61,7 +67,7 @@ export default function QuestionGroup({ questionBlock }: Props) {
                 name={`${questionBlock.skill}_used`}
                 value={val.toLowerCase()}
                 required
-                onChange={(e) => setUsed(e.target.value)}
+                onChange={(e) => handleUsedChange(e.target.value)}
                 className="accent-[#7248b9] w-5 h-5 sm:w-4 sm:h-4 cursor-pointer"
               />
               <span className="text-sm text-gray-700 group-hover:text-[#7248b9] transition-colors">
@@ -86,6 +92,8 @@ export default function QuestionGroup({ questionBlock }: Props) {
           rows={3}
           placeholder="Your answer"
           disabled={used === "no"}
+          value={example}
+          onChange={(e) => setExample(e.target.value)}
           className="w-full border-b border-gray-300 focus:border-[#7248b9] outline-none text-sm py-1.5 text-gray-800 placeholder:text-gray-300 resize-none transition-colors bg-transparent disabled:opacity-40 disabled:cursor-not-allowed"
         />
       </div>
