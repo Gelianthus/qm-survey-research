@@ -79,17 +79,23 @@ export default function QuestionGroup({ questionBlock }: Props) {
       </div>
 
       <div className="space-y-1">
-        <label
-          htmlFor={`${questionBlock.skill}_example`}
-          className={`text-sm ${used === "no" ? "text-gray-400" : "text-gray-700"}`}
-        >
-          {questionBlock.questions[2]}{" "}
-          <span className="text-gray-400 text-xs">(Optional)</span>
-        </label>
+        <div className="flex items-end justify-between">
+          <label
+            htmlFor={`${questionBlock.skill}_example`}
+            className={`text-sm ${used === "no" ? "text-gray-400" : "text-gray-700"}`}
+          >
+            {questionBlock.questions[2]}{" "}
+            <span className="text-gray-400 text-xs">(Optional)</span>
+          </label>
+          <span className={`text-xs ${example.length >= 480 ? "text-red-400" : "text-gray-400"}`}>
+            {example.length}/500
+          </span>
+        </div>
         <textarea
           name={`${questionBlock.skill}_example`}
           id={`${questionBlock.skill}_example`}
           rows={3}
+          maxLength={500}
           placeholder="Your answer"
           disabled={used === "no"}
           value={example}

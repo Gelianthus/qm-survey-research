@@ -83,6 +83,7 @@ export default function Home() {
               </label>
               <input
                 type="text"
+                maxLength={60}
                 name="student_name"
                 placeholder="Your answer"
                 className="border-b border-gray-300 focus:border-[#7248b9] outline-none text-sm py-1.5 text-gray-800 placeholder:text-gray-300 transition-colors bg-transparent"
@@ -96,6 +97,7 @@ export default function Home() {
               </label>
               <input
                 type="text"
+                maxLength={60}
                 name="college_program"
                 required
                 placeholder="Your answer"
@@ -109,6 +111,7 @@ export default function Home() {
               </label>
               <input
                 type="text"
+                maxLength={60}
                 name="school"
                 required
                 placeholder="Your answer"
